@@ -101,3 +101,27 @@ class Symbol(Base):
     css_id: Mapped[Optional[str]] = mapped_column(String(15))
     is_active: Mapped[Optional[bool]] = mapped_column(Boolean)
 
+class OptionsContract(Base):
+    __tablename__ = 'options_contracts'
+    
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    
+    underlying_symbol: Mapped[str] = mapped_column(String(10), nullable=False, index=True)
+    option_symbol: Mapped[str] = mapped_column(String(30), nullable=False, unique=True, index=True)
+    contract_type: Mapped[str] = mapped_column(String(4), nullable=False)  # 'CALL' or 'PUT'
+    strike_price: Mapped[Decimal] = mapped_column(Numeric(12, 4), nullable=False, index=True)
+    expiration_date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
+    is_index_option: Mapped[bool] = mapped_column(Boolean, default=False)
+    date_available: Mapped[Optional[date]] = mapped_column(Date)
+    days_to_expiration: Mapped[Optional[int]] = mapped_column(SmallInteger)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    market_data = relationship("OptionsMarketData", back_populates="contract")
+    
+
+    __table_args__ = (
+        Index('idx_contracts_underlying_expiry', 'underlying_symbol', 'expiration_date'),
+        Index('idx_contracts_underlying_strike', 'underlying_symbol', 'strike_price'),
+        Index('idx_contracts_chain_lookup', 'underlying_symbol', 'expiration_date', 'contract_type'),
+        Index('idx_contracts_active', 'is_active'),
+    )
