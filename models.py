@@ -1,11 +1,11 @@
 from sqlalchemy import Column, Boolean, Date, Double, Integer, DateTime, Numeric, PrimaryKeyConstraint, SmallInteger, String, Time, Uuid, Index, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from pydantic import BaseModel, ConfigDict
 from decimal import Decimal
 from typing import Optional
 from datetime import datetime, date
 import uuid
-
 
 class Base(DeclarativeBase):
     pass
@@ -44,6 +44,32 @@ class EodHistPrice(Base):
     close: Mapped[Optional[Decimal]] = mapped_column(Numeric(8, 0))
     adj_close: Mapped[Optional[Decimal]] = mapped_column(Numeric(8, 0))
 
+
+class EodDataSymbol(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
+    eod_id: int 
+    eod_symbol: Optional[str]
+    eod_currency: Optional[int]
+    eod_exchange: Optional[int]
+    eod_vendor: Optional[str]
+    is_active: Optional[bool]
+    eod_sedol: Optional[str] 
+    start_date: Optional[date]
+    end_date: Optional[date]
+    change_date: Optional[date]
+    notes: Optional[str]
+
+class EodHistPrice(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
+    eod_id: int
+    eod_hist_date: date
+    open: Optional[Decimal]
+    high: Optional[Decimal]
+    low: Optional[Decimal]
+    close: Optional[Decimal]
+    adj_close: Optional[Decimal]
 
 class EtfCompPrices(Base):
     __tablename__ = 'etf_comp_prices'
@@ -86,6 +112,7 @@ class EtfProfiles(Base):
     iiv_type: Mapped[Optional[str]] = mapped_column(String(15))
 
 
+
 class Symbol(Base):
     __tablename__ = 'symbol'
     __table_args__ = (
@@ -98,8 +125,22 @@ class Symbol(Base):
     instr_type: Mapped[Optional[str]] = mapped_column(String)
     exchange: Mapped[Optional[str]] = mapped_column(String(15))
     sedol: Mapped[Optional[str]] = mapped_column(String(7))
-    css_id: Mapped[Optional[str]] = mapped_column(String(15))
+    eod_id: Mapped[Optional[str]] = mapped_column(String(15))
     is_active: Mapped[Optional[bool]] = mapped_column(Boolean)
+
+class SymbolModel(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    cc_id: str
+    stock_id: int
+    ticker: Optional[str]
+    instr_type: Optional[str]
+    is_active: Optional[bool]
+    exchange: Optional[str]
+    sedol: Optional[str]
+    eod_id: Optional[str]
+
+
 
 class OptionsContract(Base):
     __tablename__ = 'options_contracts'
